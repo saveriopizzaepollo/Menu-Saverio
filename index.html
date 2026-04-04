@@ -3,21 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saverio Menu - Gestione Prezzi</title>
+    <title>Saverio Menu - Gestione</title>
     <style>
-        :root {
-            --primary-color: #e63946;
-            --secondary-color: #457b9d;
-            --bg-color: #f1faee;
-        }
-
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: var(--bg-color); 
-            margin: 0; 
-            padding: 20px; 
-        }
-
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f8f9fa; color: #333; }
+        
         /* Header con tasto impostazioni in alto a destra */
         .header {
             display: flex;
@@ -27,111 +16,96 @@
             margin: 0 auto 20px auto;
         }
 
-        .container { 
+        .menu-container { 
             max-width: 600px; 
             margin: auto; 
             background: white; 
             padding: 25px; 
-            border-radius: 20px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            border-radius: 15px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
         }
 
-        h1 { color: var(--primary-color); margin: 0; font-size: 1.8em; }
-
-        .btn-settings { 
-            background: #6c757d; 
-            color: white; 
-            border: none; 
-            padding: 8px 15px; 
-            border-radius: 50px; 
-            cursor: pointer; 
-            font-weight: bold;
-        }
-
-        .menu-list { margin-top: 20px; }
+        h2 { margin: 0; color: #d9534f; }
 
         .item { 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            padding: 15px 0; 
+            margin-bottom: 15px; 
+            padding-bottom: 10px; 
             border-bottom: 1px solid #eee; 
         }
 
-        .item-name { font-weight: 600; color: #1d3557; }
+        .item span { font-weight: 500; font-size: 1.1em; }
 
-        /* Input prezzi */
-        .price-input { 
-            width: 70px; 
-            padding: 5px; 
-            border: 2px solid transparent; 
-            border-radius: 8px; 
+        input[type="number"] { 
+            width: 80px; 
+            padding: 6px; 
+            border-radius: 6px; 
+            border: 1px solid transparent; 
             text-align: right; 
-            font-weight: bold; 
-            background: #f8f9fa;
+            font-weight: bold;
+            background: #f1f1f1;
         }
 
-        .price-input:enabled { 
-            border-color: var(--secondary-color); 
+        input:enabled { 
+            border: 1px solid #007bff; 
             background: white; 
         }
 
-        /* Tasto Salva in basso */
-        .save-area {
-            margin-top: 30px;
-            text-align: center;
-        }
+        input:disabled { color: #000; }
 
-        .btn-save { 
-            background-color: #2a9d8f; 
-            color: white; 
-            border: none; 
-            padding: 15px 40px; 
-            border-radius: 12px; 
-            font-size: 1.1em; 
-            font-weight: bold; 
+        .controls { margin-top: 25px; display: flex; flex-direction: column; gap: 10px; }
+        
+        button { 
+            padding: 12px 20px; 
             cursor: pointer; 
-            display: none; /* Nascosto di default */
-            width: 100%;
-            box-shadow: 0 4px 15px rgba(42, 157, 143, 0.3);
+            border-radius: 8px; 
+            border: none; 
+            font-weight: bold; 
+            transition: 0.3s;
         }
 
-        .admin-notice {
-            background: #ffb703;
-            color: #023047;
+        .btn-settings { background-color: #6c757d; color: white; font-size: 0.9em; }
+        .btn-save { background-color: #28a745; color: white; display: none; width: 100%; font-size: 1.1em; }
+        
+        .admin-label { 
+            background-color: #fcf8e3;
+            color: #8a6d3b;
             padding: 10px;
-            border-radius: 8px;
+            border-radius: 5px;
             text-align: center;
+            font-size: 0.9em;
             margin-bottom: 15px;
-            font-weight: bold;
             display: none;
+            border: 1px solid #faebcc;
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>🍕 Saverio Menu</h1>
-        <button class="btn-settings" onclick="loginAdmin()">⚙️ Modifica</button>
+<div class="header">
+    <h2>🍕 Saverio Menu</h2>
+    <button id="btn-login" class="btn-settings" onclick="chiediAccesso()">⚙️ Modifica</button>
+</div>
+
+<div class="menu-container">
+    <div id="admin-status" class="admin-label">🔓 MODALITÀ MODIFICA ATTIVA</div>
+    
+    <div id="menu-items">
+        <p style="text-align: center;">Caricamento menu...</p>
     </div>
 
-    <div class="container">
-        <div id="admin-banner" class="admin-notice">MODALITÀ MODIFICA ATTIVA</div>
-        
-        <div id="menu-container" class="menu-list">
-            <p style="text-align: center;">Caricamento menu...</p>
-        </div>
-
-        <div class="save-area">
-            <button id="btn-save" class="btn-save" onclick="saveToFirebase()">💾 SALVA NUOVI PREZZI</button>
-        </div>
+    <div class="controls">
+        <button id="btn-save" class="btn-save" onclick="salvaPrezziSuFirebase()">💾 SALVA NUOVI PREZZI</button>
     </div>
+</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // Configurazione dal tuo screenshot
+    // --- CONFIGURAZIONE FIREBASE (Dati dal tuo screenshot) ---
     const firebaseConfig = {
         apiKey: "AIzaSyCuiLRkkFHtUE7Szm343zl-4Gh08zdjqOA",
         authDomain: "saverio-menu.firebaseapp.com",
@@ -144,55 +118,60 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const PWD_SECRET = "Believeit92!";
+    const prezziRef = ref(db, 'menu/prezzi');
 
-    // 1. SCARICA I PREZZI E CREA LA LISTA
-    onValue(ref(db, 'menu/prezzi'), (snapshot) => {
-        const data = snapshot.val() || { "Margherita": 7.00, "Diavola": 8.50, "Cosa Nostra": 10.00, "Acqua": 2.00 };
-        const container = document.getElementById('menu-container');
-        container.innerHTML = "";
+    const PASSWORD_ADMIN = "Believeit92!"; 
 
-        for (let key in data) {
+    // 1. CARICARE I PREZZI IN TEMPO REALE
+    onValue(prezziRef, (snapshot) => {
+        const data = snapshot.val() || { "Margherita": 7, "Diavola": 8.5, "Acqua": 2 };
+        const container = document.getElementById('menu-items');
+        container.innerHTML = ""; 
+
+        for (let piatto in data) {
             container.innerHTML += `
                 <div class="item">
-                    <span class="item-name">${key}</span>
+                    <span>${piatto}</span>
                     <div>
-                        <input type="number" step="0.50" class="price-input" data-id="${key}" value="${data[key]}" disabled>
-                        <span style="font-weight:bold">€</span>
+                        <input type="number" step="0.10" class="input-prezzo" data-piatto="${piatto}" value="${data[piatto]}" disabled> €
                     </div>
-                </div>`;
+                </div>
+            `;
         }
     });
 
-    // 2. FUNZIONE LOGIN (TASTO IN ALTO)
-    window.loginAdmin = function() {
-        const pass = prompt("Inserisci la password per modificare i prezzi:");
-        if (pass === PWD_SECRET) {
-            document.querySelectorAll('.price-input').forEach(i => i.disabled = false);
+    // 2. FUNZIONE DI ACCESSO
+    window.chiediAccesso = function() {
+        const pass = prompt("Inserisci password amministratore:");
+        if (pass === PASSWORD_ADMIN) {
+            document.querySelectorAll('.input-prezzo').forEach(input => input.disabled = false);
             document.getElementById('btn-save').style.display = 'block';
-            document.getElementById('admin-banner').style.display = 'block';
-            alert("Accesso Amministratore confermato.");
+            document.getElementById('admin-status').style.display = 'block';
+            document.getElementById('btn-login').style.display = 'none';
         } else {
-            alert("Password Errata!");
+            alert("Password errata!");
         }
-    };
+    }
 
     // 3. SALVATAGGIO SU FIREBASE
-    window.saveToFirebase = function() {
-        const inputs = document.querySelectorAll('.price-input');
-        const updatedMenu = {};
+    window.salvaPrezziSuFirebase = function() {
+        const inputs = document.querySelectorAll('.input-prezzo');
+        const nuoviPrezzi = {};
 
         inputs.forEach(input => {
-            updatedMenu[input.dataset.id] = parseFloat(input.value);
+            const nomePiatto = input.getAttribute('data-piatto');
+            nuoviPrezzi[nomePiatto] = parseFloat(input.value);
         });
 
-        set(ref(db, 'menu/prezzi'), updatedMenu)
+        set(ref(db, 'menu/prezzi'), nuoviPrezzi)
             .then(() => {
-                alert("Prezzi aggiornati con successo!");
-                location.reload(); // Blocca di nuovo tutto
+                alert("Prezzi aggiornati e salvati online!");
+                location.reload(); 
             })
-            .catch(err => alert("Errore: " + err.message));
-    };
+            .catch((error) => {
+                alert("Errore nel salvataggio: " + error.message);
+            });
+    }
 </script>
 
 </body>
