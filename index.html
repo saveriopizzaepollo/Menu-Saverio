@@ -194,10 +194,6 @@ padding: 12px 0 4px; margin-top: 8px;
 </head>
 <body>
 
-<!-- ADMIN BUTTON -->
-
-<button id="admin-btn" onclick="openAdmin()" title="Impostazioni">⚙</button>
-
 <!-- ADMIN OVERLAY -->
 
 <div id="admin-overlay">
@@ -949,6 +945,10 @@ function setLang(lang) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
+
+<!-- ADMIN BUTTON - Fixed position -->
+
+<button onclick="openAdmin()" style="position:fixed;top:14px;right:14px;z-index:99999;background:#1a6fa8;border:2px solid white;color:white;font-size:1.3rem;width:42px;height:42px;border-radius:50%;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);" title="Impostazioni">⚙</button>
 
 </body>
 </html>
