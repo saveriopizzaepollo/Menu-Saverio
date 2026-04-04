@@ -3,43 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saverio Menu - Gestione</title>
+    <title>Saverio Menu - Gestione Prezzi</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; padding: 20px; color: #333; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #d9534f; margin-bottom: 30px; }
-        .piatto { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; }
-        .piatto span { font-size: 1.1em; font-weight: 500; }
-        input { width: 80px; padding: 8px; border: 2px solid transparent; border-radius: 6px; text-align: right; font-weight: bold; font-size: 1em; background: #f9f9f9; }
-        input:enabled { border-color: #0275d8; background: #fff; }
-        .controlli { margin-top: 30px; display: flex; flex-direction: column; gap: 15px; }
-        button { padding: 15px; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; font-size: 1em; transition: 0.3s; }
-        .btn-settings { background: #6c757d; color: white; }
-        .btn-save { background: #5cb85c; color: white; display: none; }
-        .badge-admin { background: #f0ad4e; color: white; text-align: center; padding: 5px; border-radius: 5px; font-size: 0.8em; display: none; margin-bottom: 10px; }
+        :root {
+            --primary-color: #e63946;
+            --secondary-color: #457b9d;
+            --bg-color: #f1faee;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; 
+            padding: 20px; 
+        }
+
+        /* Header con tasto impostazioni in alto a destra */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto 20px auto;
+        }
+
+        .container { 
+            max-width: 600px; 
+            margin: auto; 
+            background: white; 
+            padding: 25px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+        }
+
+        h1 { color: var(--primary-color); margin: 0; font-size: 1.8em; }
+
+        .btn-settings { 
+            background: #6c757d; 
+            color: white; 
+            border: none; 
+            padding: 8px 15px; 
+            border-radius: 50px; 
+            cursor: pointer; 
+            font-weight: bold;
+        }
+
+        .menu-list { margin-top: 20px; }
+
+        .item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 15px 0; 
+            border-bottom: 1px solid #eee; 
+        }
+
+        .item-name { font-weight: 600; color: #1d3557; }
+
+        /* Input prezzi */
+        .price-input { 
+            width: 70px; 
+            padding: 5px; 
+            border: 2px solid transparent; 
+            border-radius: 8px; 
+            text-align: right; 
+            font-weight: bold; 
+            background: #f8f9fa;
+        }
+
+        .price-input:enabled { 
+            border-color: var(--secondary-color); 
+            background: white; 
+        }
+
+        /* Tasto Salva in basso */
+        .save-area {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .btn-save { 
+            background-color: #2a9d8f; 
+            color: white; 
+            border: none; 
+            padding: 15px 40px; 
+            border-radius: 12px; 
+            font-size: 1.1em; 
+            font-weight: bold; 
+            cursor: pointer; 
+            display: none; /* Nascosto di default */
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(42, 157, 143, 0.3);
+        }
+
+        .admin-notice {
+            background: #ffb703;
+            color: #023047;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🍕 Saverio Menu</h1>
-    <div id="admin-badge" class="badge-admin">MODALITÀ MODIFICA ATTIVA</div>
-    
-    <div id="lista-piatti">
-        <p style="text-align: center;">Caricamento menu in corso...</p>
+    <div class="header">
+        <h1>🍕 Saverio Menu</h1>
+        <button class="btn-settings" onclick="loginAdmin()">⚙️ Modifica</button>
     </div>
 
-    <div class="controlli">
-        <button id="btn-login" class="btn-settings" onclick="attivaModifica()">⚙️ Gestione (Password)</button>
-        <button id="btn-save" class="btn-save" onclick="salvaNuoviPrezzi()">💾 Salva e Aggiorna</button>
+    <div class="container">
+        <div id="admin-banner" class="admin-notice">MODALITÀ MODIFICA ATTIVA</div>
+        
+        <div id="menu-container" class="menu-list">
+            <p style="text-align: center;">Caricamento menu...</p>
+        </div>
+
+        <div class="save-area">
+            <button id="btn-save" class="btn-save" onclick="saveToFirebase()">💾 SALVA NUOVI PREZZI</button>
+        </div>
     </div>
-</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // Dati presi dal tuo screenshot
+    // Configurazione dal tuo screenshot
     const firebaseConfig = {
         apiKey: "AIzaSyCuiLRkkFHtUE7Szm343zl-4Gh08zdjqOA",
         authDomain: "saverio-menu.firebaseapp.com",
@@ -47,58 +139,59 @@
         storageBucket: "saverio-menu.firebasestorage.app",
         messagingSenderId: "351944399414",
         appId: "1:351944399414:web:89ca914f6e673b93751697",
-        databaseURL: "https://saverio-menu-default-rtdb.europe-west1.firebasedatabase.app" 
+        databaseURL: "https://saverio-menu-default-rtdb.europe-west1.firebasedatabase.app"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const PWD_SECRET = "Believeit92!";
 
-    // 1. CARICAMENTO DATI
+    // 1. SCARICA I PREZZI E CREA LA LISTA
     onValue(ref(db, 'menu/prezzi'), (snapshot) => {
-        const data = snapshot.val() || { "Pizza Margherita": 7, "Pizza Diavola": 8.5, "Pizza Capricciosa": 9, "Acqua": 2 };
-        const container = document.getElementById('lista-piatti');
+        const data = snapshot.val() || { "Margherita": 7.00, "Diavola": 8.50, "Cosa Nostra": 10.00, "Acqua": 2.00 };
+        const container = document.getElementById('menu-container');
         container.innerHTML = "";
 
-        for (let nome in data) {
+        for (let key in data) {
             container.innerHTML += `
-                <div class="piatto">
-                    <span>${nome}</span>
+                <div class="item">
+                    <span class="item-name">${key}</span>
                     <div>
-                        <input type="number" step="0.50" class="prezzo-input" data-id="${nome}" value="${data[nome]}" disabled> €
+                        <input type="number" step="0.50" class="price-input" data-id="${key}" value="${data[key]}" disabled>
+                        <span style="font-weight:bold">€</span>
                     </div>
                 </div>`;
         }
     });
 
-    // 2. FUNZIONE SBLOCCO (PASSWORD)
-    window.attivaModifica = function() {
-        const inputPsw = prompt("Inserisci la password amministratore:");
-        if (inputPsw === PWD_SECRET) {
-            document.querySelectorAll('.prezzo-input').forEach(i => i.disabled = false);
+    // 2. FUNZIONE LOGIN (TASTO IN ALTO)
+    window.loginAdmin = function() {
+        const pass = prompt("Inserisci la password per modificare i prezzi:");
+        if (pass === PWD_SECRET) {
+            document.querySelectorAll('.price-input').forEach(i => i.disabled = false);
             document.getElementById('btn-save').style.display = 'block';
-            document.getElementById('admin-badge').style.display = 'block';
-            document.getElementById('btn-login').style.display = 'none';
+            document.getElementById('admin-banner').style.display = 'block';
+            alert("Accesso Amministratore confermato.");
         } else {
-            alert("Password errata! Accesso negato.");
+            alert("Password Errata!");
         }
     };
 
     // 3. SALVATAGGIO SU FIREBASE
-    window.salvaNuoviPrezzi = function() {
-        const inputs = document.querySelectorAll('.prezzo-input');
-        const nuoviPrezzi = {};
+    window.saveToFirebase = function() {
+        const inputs = document.querySelectorAll('.price-input');
+        const updatedMenu = {};
 
-        inputs.forEach(i => {
-            nuoviPrezzi[i.dataset.id] = parseFloat(i.value);
+        inputs.forEach(input => {
+            updatedMenu[input.dataset.id] = parseFloat(input.value);
         });
 
-        set(ref(db, 'menu/prezzi'), nuoviPrezzi)
+        set(ref(db, 'menu/prezzi'), updatedMenu)
             .then(() => {
                 alert("Prezzi aggiornati con successo!");
-                location.reload(); // Ricarica per bloccare di nuovo i campi
+                location.reload(); // Blocca di nuovo tutto
             })
-            .catch(err => alert("Errore nel salvataggio: " + err.message));
+            .catch(err => alert("Errore: " + err.message));
     };
 </script>
 
