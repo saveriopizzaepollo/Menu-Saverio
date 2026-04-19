@@ -967,15 +967,14 @@ var pricesRef = db.ref('prices');
 pricesRef.on('value', function(snapshot) {
   var data = snapshot.val();
   if (!data) return;
-  document.querySelectorAll('.item').forEach(function(item) {
-    var nameEl = item.querySelector('.item-name');
-    var priceEl = item.querySelector('.item-price');
-    if (!nameEl || !priceEl) return;
-    var name = nameEl.textContent.trim().split('(')[0].trim().toUpperCase().replace(/[^A-Z0-9]/g, '_');
-    if (data[name] !== undefined) {
-      priceEl.textContent = data[name];
+  document.querySelectorAll('[data-key]').forEach(function(el) {
+    var key = el.getAttribute('data-key');
+    if (data[key] !== undefined) {
+      el.textContent = data[key];
     }
   });
+});
+
 });
 
 // ===== LANGUAGE SWITCHER =====
